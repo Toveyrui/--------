@@ -26,7 +26,7 @@
 %% (1)
 figure(1);
 I = imread('../ImgLib/football.jpg');
-disp('I');
+imshow(I);
 
 %% (2)
 disp('FileName');
