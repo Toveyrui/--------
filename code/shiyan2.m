@@ -28,11 +28,12 @@ clear all;
 %% (1)
 figure(1);
 I = imread('../ImgLib/football.jpg');
+I_gray = rgb2gray(I); % Convert to grayscale
 disp('I');
 % 离散傅里叶变换
-F = fft2(I);
+F = fft2(I_gray);
 % 离散余弦变换
-C = dct2(I);
+C = dct2(I_gray);
 % 逆变换
 I_F = ifft2(F);
 I_C = idct2(C);
@@ -52,12 +53,11 @@ title('傅里叶逆变换');
 % 观察图像的频谱并减少DCT系数
 imshow(uint8(I_C)); 
 title('余弦逆变换');
-
 %% (2)
 figure(2);
 % 图像灰度修正
-I1 = imread('../ImgLib/pout.tif');
-I2 = imread('../ImgLib/tire.tif');
+I1 = imread('pout.tif');
+I2 = imread('tire.tif');
 % 直方图
 subplot(2, 2, 1);
 imshow(I1);
@@ -84,27 +84,33 @@ title('tire.tif的灰度直方图');
 subplot(2, 2, 4);
 imhist(I2);
 % 不均匀光照的校正
-I = imread('../ImgLib/pout.tif');
-% 分块处理函数blkproc和图像相减函数imsubtract校正图6.6存在的不均匀光照现象
-I = blkproc(I, [16, 16], 'mean2(x)');
-I = imsubtract(I, I);
+I = imread('pout.tif');
+% 分块处理函数blockproc和图像相减函数imsubtract校正图6.6存在的不均匀光照现象
+fun = @(block_struct) mean2(block_struct.data) * ones(size(block_struct.data));
+I_mean = blockproc(I, [16, 16], fun);
+I_mean_resized = imresize(I_mean, [size(I, 1), size(I, 2)]); % Ensure sizes match
+I_mean_resized = im2uint8(I_mean_resized); % Convert to uint8
+I_corrected = imsubtract(I, I_mean_resized);
 figure(4);
+imshow(I_corrected);
+title('pout.tif的不均匀光照校正');
 imshow(I);
 title('pout.tif的不均匀光照校正');
 % 三段线性变换增强
-I = imread('../ImgLib/couple.tif');
+I = imread('../ImgLib/couple.tiff');
 % 选择合适的转折点，编程对图6.10进行三段线性变换增强
 I = imadjust(I, [0.3, 0.7], [0, 1]);
 figure(5);
 imshow(I);
 title('couple.tif的三段线性变换增强');
 % 图像平滑方法
-I = imread('../ImgLib/eight.tif');
+I = imread('../ImgLib/eight.jpg');
 % 对有噪图像或人为加入噪声的图像进行平滑处理
 I = imnoise(I, 'salt & pepper', 0.02);
 % 选择不同的去噪方法，如邻域平均、中值滤波等方法
-I1 = filter2(fspecial('average', 3), I);
-I2 = medfilt2(I);
+I_gray = rgb2gray(I); % Convert to grayscale
+I1 = filter2(fspecial('average', 3), I_gray);
+I2 = medfilt2(I_gray);
 figure(6);
 subplot(2, 2, 1);
 imshow(I);
@@ -116,7 +122,7 @@ subplot(2, 2, 3);
 imshow(I2);
 title('中值去噪图像');
 % 图像锐化方法
-I = imread('../ImgLib/rice.tif');
+I = imread('../ImgLib/rice.png');
 % 利用罗伯茨梯度对图像进行4种锐化处理
 I1 = imfilter(I, fspecial('sobel'));
 I2 = imfilter(I, fspecial('prewitt'));
