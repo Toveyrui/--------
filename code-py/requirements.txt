@@ -1,0 +1,7 @@
+Pillow
+numpy
+matplotlib
+opencv-python
+scipy
+opencv-python-headless 
+jinja2
